@@ -264,12 +264,13 @@ api.defaults.adapter = async (config) => {
         localStorage.setItem("mock_projects", JSON.stringify(projects));
     };
 
+    // FIXED: returns null when nobody is logged in (was returning dummyUser)
     const getUser = () => {
         try {
             const saved = localStorage.getItem("mock_user");
-            return saved ? JSON.parse(saved) : dummyUser;
+            return saved ? JSON.parse(saved) : null;
         } catch {
-            return dummyUser;
+            return null;
         }
     };
 
