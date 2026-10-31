@@ -1,8 +1,7 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2Icon } from "lucide-react";
 import LoginLeft from "../components/LoginLeft";
-import api from "../api/api";
 import { useAppContext } from "../context/AppContext";
 
 const AuthPage = ({ mode }) => {
@@ -13,10 +12,17 @@ const AuthPage = ({ mode }) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const { setUser } = useAppContext();
-  const navigate = useNavigate();
+  const { login, register } = useAppContext();
 
   const isLogin = mode === "login";
+
+  // React reuses this component when you switch /login <-> /register,
+  // so clear the old error and password when the mode changes.
+  useEffect(() => {
+    setError("");
+    setPassword("");
+    setShowPassword(false);
+  }, [mode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,13 +30,14 @@ const AuthPage = ({ mode }) => {
     setLoading(true);
 
     try {
-      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
-      const payload = isLogin ? { email, password } : { name, email, password };
-      const { data } = await api.post(endpoint, payload);
-      setUser(data.user);
-      navigate("/", { replace: true });
+      if (isLogin) {
+        await login(email.trim(), password);
+      } else {
+        await register(name.trim(), email.trim(), password);
+      }
+      // login/register in the context already navigate to "/"
     } catch (err) {
-      setError(err.response?.data?.error || err.message || "Something went wrong");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -53,7 +60,7 @@ const AuthPage = ({ mode }) => {
             <h1 className="text-3xl font-medium tracking-tight text-zinc-900 mb-1.5 font-sans">
               {isLogin ? "Sign in" : "Create an account"}
             </h1>
-            <p className="text-zinc-500">
+            <p className="text-sm text-zinc-400">
               {isLogin
                 ? "Enter your credentials to access your website builder"
                 : "Get started by entering your registration details."}
@@ -61,7 +68,10 @@ const AuthPage = ({ mode }) => {
           </div>
 
           {error && (
-            <div className="mb-6 p-3 border border-red-200 bg-red-50 text-red-700 text-xs rounded">
+            <div
+              role="alert"
+              className="mb-6 p-3 border border-red-200 bg-red-50 text-red-700 text-xs rounded"
+            >
               {error}
             </div>
           )}
@@ -69,9 +79,13 @@ const AuthPage = ({ mode }) => {
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             {!isLogin && (
               <div>
-                <label className={labelClass}>Full Name</label>
+                <label htmlFor="name" className={labelClass}>
+                  Full Name
+                </label>
                 <input
+                  id="name"
                   type="text"
+                  autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -82,9 +96,13 @@ const AuthPage = ({ mode }) => {
             )}
 
             <div>
-              <label className={labelClass}>Email Address</label>
+              <label htmlFor="email" className={labelClass}>
+                Email Address
+              </label>
               <input
+                id="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -94,10 +112,15 @@ const AuthPage = ({ mode }) => {
             </div>
 
             <div>
-              <label className={labelClass}>Password</label>
+              <label htmlFor="password" className={labelClass}>
+                Password
+              </label>
               <div className="relative">
                 <input
+                  id="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete={isLogin ? "current-password" : "new-password"}
+                  minLength={isLogin ? undefined : 6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -106,6 +129,7 @@ const AuthPage = ({ mode }) => {
                 />
                 <button
                   type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-300 hover:text-zinc-600 flex items-center justify-center cursor-pointer transition-colors"
                 >
@@ -120,7 +144,7 @@ const AuthPage = ({ mode }) => {
               className="w-full py-2.5 bg-zinc-950 hover:bg-zinc-800 text-white text-sm font-medium rounded flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer transition-colors"
             >
               {loading && <Loader2Icon size={16} className="animate-spin" />}
-              {isLogin ? "Sign in" : "Create account"}
+              {isLogin ? "Sign in" : "Sign up"}
             </button>
           </form>
 
@@ -128,14 +152,20 @@ const AuthPage = ({ mode }) => {
             {isLogin ? (
               <>
                 New to BuilderAI?{" "}
-                <Link to="/register" className="text-zinc-900 font-medium hover:underline">
+                <Link
+                  to="/register"
+                  className="text-zinc-900 font-medium hover:underline"
+                >
                   Create an account
                 </Link>
               </>
             ) : (
               <>
                 Already have an account?{" "}
-                <Link to="/login" className="text-zinc-900 font-medium hover:underline">
+                <Link
+                  to="/login"
+                  className="text-zinc-900 font-medium hover:underline"
+                >
                   Sign in here
                 </Link>
               </>
