@@ -1,5 +1,6 @@
 import React from 'react'
 import { useAppContext } from '../context/AppContext'
+import PromptInput from '../components/PromptInput'
 
 const HomePage = () => {
 
@@ -32,16 +33,22 @@ const HomePage = () => {
           </div>
           {/*Titile*/}
           <h1 className="text-center text-4xl md:text-6xl font-medium mt-4 max-w-2xl text-white">
-            Let's build something amazing together.
+            Let's build something amazing together.</h1>
             <p className=" text-center text-sm md:text-base max-w-xl mt-4 text-white/65 leading-relaxed">
               Desecribe your idea and watch AI design, structure and launch your website instantly. No coding required.
             </p>
             {/*Prompt input with glassmorphic variants*/}
 
         <div className="w-full mt-6">
-          
+            <PromptInput
+             onSubmit={() => {}}
+             loading={false}
+             plaqceholder="Create a portfolio website..."
+             variant="glass"
+             autoFocus
+            />
         </div>
-          </h1>
+          
         </div>
       </div>
     </div>

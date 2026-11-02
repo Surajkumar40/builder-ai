@@ -10,7 +10,10 @@ export function AppContextProvider({ children }) {
 
   // Auth states
   const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
+  const [loadingUser, setLoadingUser] = useState();
+// States 
+  const[projects, setProjects] = useState([]);
+  const[loadingProjects, set] = useState([]);
 
   // Check the session once when the app loads
   useEffect(() => {
