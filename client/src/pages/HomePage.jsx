@@ -2,8 +2,23 @@ import React, { useEffect } from 'react'
 import { useAppContext } from '../context/AppContext'
 import PromptInput from '../components/PromptInput'
 import { homeTags } from '../assets/assets'
+import { useNavigate } from 'react-router-dom'
+import { Clock, Trash2, ArrowRight } from 'lucide-react'
+import moment from 'moment'
+
+// TEMP: set to false to use your real projects
+const SHOW_SAMPLE = true
+
+const sampleProjects = [
+  { $id: '1', name: 'Portfolio website', $createdAt: '2026-11-03T06:00:00Z', $updatedAt: '2026-11-03T09:30:00Z' },
+  { $id: '2', name: 'Restaurant landing page', $createdAt: '2026-11-02T11:00:00Z', $updatedAt: '2026-11-02T20:15:00Z' },
+  { $id: '3', name: 'Fitness tracker dashboard', $createdAt: '2026-10-10T14:20:00Z', $updatedAt: '2026-10-20T17:45:00Z' },
+  { $id: '4', name: 'Blog with dark mode', $createdAt: '2026-10-01T07:30:00Z', $updatedAt: '2026-10-11T12:00:00Z' },
+]
 
 const HomePage = () => {
+
+  const navigate = useNavigate()
   const {
     user,
     projects,
@@ -18,6 +33,9 @@ const HomePage = () => {
   useEffect(() => {
     loadProjects()
   }, [loadProjects])
+
+  const list = SHOW_SAMPLE ? sampleProjects : projects
+  const isLoading = SHOW_SAMPLE ? false : loadingProjects
 
   console.log({ loadingProjects, projects }) // remove once it works
 
@@ -97,31 +115,61 @@ const HomePage = () => {
                 All Projects
               </p>
               <span className="text-xs text-zinc-100 font-normal">
-                {projects?.length ?? 0} {projects?.length === 1 ? 'project' : 'projects'}
+                {list?.length ?? 0} {list?.length === 1 ? 'project' : 'projects'}
               </span>
             </div>
 
-            {loadingProjects ? (
+            {isLoading ? (
               <p className="text-sm text-white/60">Loading projects...</p>
-            ) : !projects?.length ? (
+            ) : !list?.length ? (
               <p className="text-sm text-white/60">No projects yet. Create one above.</p>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {projects.map((project, index) => {
+              <div className="flex flex-col gap-2">
+                {list.map((project, index) => {
                   const id = project.$id ?? project._id ?? project.id ?? index
+                  const rawDate =
+                    project.$updatedAt ?? project.updatedAt ?? project.$createdAt ?? project.createdAt
+                  const time = rawDate ? moment(rawDate) : null
                   return (
                     <div
                       key={id}
-                      className="flex items-center justify-between p-4 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md"
+                      className="group flex items-center gap-4 px-4 py-3 rounded-xl bg-white/10 border border-white/15 backdrop-blur-md hover:bg-white/15 transition"
                     >
-                      <span className="text-sm font-medium truncate">
-                        {project.name || project.title || 'Untitled project'}
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="block text-sm font-medium truncate">
+                          {project.name || project.title || 'Untitled project'}
+                        </span>
+                        {time?.isValid() && (
+                          <span
+                            title={time.format('DD MMM YYYY, hh:mm A')}
+                            className="flex items-center gap-1 mt-1 text-xs text-white/60"
+                          >
+                            <Clock size={12} />
+                            {time.fromNow()}
+                          </span>
+                        )}
+                      </div>
+
                       <button
-                        onClick={() => handleDelete(id)}
-                        className="text-xs text-red-300 hover:text-red-200 cursor-pointer bg-transparent"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDelete(id)
+                        }}
+                        className="p-1.5 rounded-md text-red-300 hover:text-red-200 hover:bg-white/10 cursor-pointer bg-transparent shrink-0 transition md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100"
+                        aria-label="Delete project"
                       >
-                        Delete
+                        <Trash2 size={16} />
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          navigate(`/builder/${id}`)
+                        }}
+                        className="p-1.5 rounded-md text-white/60 hover:text-white hover:bg-white/10 cursor-pointer bg-transparent shrink-0 transition"
+                        aria-label="Open in builder"
+                      >
+                        <ArrowRight size={18} />
                       </button>
                     </div>
                   )

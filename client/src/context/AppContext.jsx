@@ -19,7 +19,7 @@ export function AppContextProvider({ children }) {
   const[chatloading, setChatLoading] = useState(false);
   const[generatingProject, setGeneratingProject] = useState(false);
   const[activeFile, setActiveFile] = useState("/App.js");
-  // const[showCode, setShowCode] = useState(false);
+  const[showCode, setShowCode] = useState(false);
   
 
 
