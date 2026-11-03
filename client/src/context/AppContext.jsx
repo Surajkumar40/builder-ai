@@ -185,6 +185,7 @@ if(isOngoing){
         loadingUser,
         setLoadingUser,
         login,
+        logout,
         register,
         projects,
         loadingProject,
